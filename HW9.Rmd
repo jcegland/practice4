@@ -1,0 +1,116 @@
+---
+title: "HW9"
+author: "Jillian Egland"
+date: "2023-04-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Team members: Jillian Egland 
+https://github.com/jcegland/practice4 
+
+
+
+## Reading in data 
+```{r} 
+library(tidyverse)
+av <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/avengers/avengers.csv", stringsAsFactors = FALSE)
+head(av)
+
+
+```
+
+
+
+```{r} 
+av0 = av %>% filter(Name.Alias !="") 
+
+av1 = av0 %>% gather(key=time, value=death, c(11,13,15,17,19)) %>%
+  select(Name.Alias, time, death) %>% 
+  mutate(time=parse_number(time)) 
+head(av1)
+
+av2 = av0 %>% gather(key=time, value=return, c(12,14,16,18,20)) %>% 
+  select(Name.Alias, time, return) %>% 
+  mutate(time=parse_number(time)) 
+head(av2)
+
+av.neat=left_join(av1, av2, by = c("Name.Alias", "time"))
+head(av.neat)
+
+```
+
+
+```{r} 
+av0 = av %>% filter(Name.Alias !="Vance Astrovik") 
+
+av1 = av0 %>% gather(key=time, value=death, c(11,13,15,17,19)) %>%
+  select(Name.Alias, time, death) %>% 
+  mutate(time=parse_number(time)) 
+head(av1)
+
+av2 = av0 %>% gather(key=time, value=return, c(12,14,16,18,20)) %>% 
+  select(Name.Alias, time, return) %>% 
+  mutate(time=parse_number(time)) 
+head(av2)
+
+av.neat=left_join(av1, av2, by = c("Name.Alias", "time"))
+head(av.neat)
+
+
+
+```
+
+
+
+
+## Part two: Validation
+
+Each team member picks one of the statements in the FiveThirtyEight [analysis](https://fivethirtyeight.com/features/avengers-death-comics-age-of-ultron/) and fact checks it based on the data. Use dplyr functionality whenever possible.
+
+Upload your answers and the code to the repository. Discuss and refine answers as a team.
+
+
+# Validation - Jillian 
+There’s a 2-in-3 chance that a member of the Avengers returned from their first stint in the afterlife, but only a 50 percent chance they recovered from a second or third death.  
+
+To find the chance of a returning from death the first time, divide 44 fake deaths/total deaths 63 = 70% chance which is close to 2-in-3 chance. 
+To find the chance of returning from death the second time, divide 8 fake deaths/total deaths 15 = 53% chance which is close to 50% chance  
+
+so the statments were correct  
+
+```{r} 
+av.neat %>% group_by(time) %>% summarise(total.num = n(),
+                                         real.death = sum(death == "YES"), 
+                                         fake.death = sum(death == "NO"), 
+                                         missing = sum(death == ""))
+
+# number who died first time 
+av.neat %>% filter(time == 1) %>% 
+  summarise(total.num = n(),
+            real.death = sum(return == "NO"), 
+            fake.death = sum(return == "YES"), 
+            total.deaths = real.death+fake.death,
+            missing = sum(return == ""))
+
+# number who died second time 
+av.neat %>% filter(time == 2) %>% 
+  summarise(total.num = n(),
+            real.death = sum(return == "NO"), 
+            fake.death = sum(return == "YES"), 
+            total.deaths = real.death+fake.death,
+            missing = sum(return == ""))
+
+``` 
+
+
+
+
+
+
+
+
+
